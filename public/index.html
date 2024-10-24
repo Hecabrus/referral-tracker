@@ -1,1 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verification</title>
+    <script>
+        function recordClick(userId) {
+            fetch('/track', { // Updated URL to match your Node.js server route
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ userId: userId, timestamp: Date.now() }),
+            });
+        }
+
+        function redirectToBot(userId) {
+            recordClick(userId);
+            setTimeout(function() {
+                window.location.href = "https://t.me/LuckyDrawMasterBot/app?startapp=Y2g9a1FqOXh2SFI3RyZnPXNwJmw9a1FqOXh2SFI3RyZzbz1TaGFyZSZ1PTU0OTA3NzU2NTM%3D&utm_source=telegram&utm_medium=bot&utm_campaign=Referral+";
+            }, 1000); // Redirect after 1 second
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('userId');
+        redirectToBot(userId);
+    </script>
+</head>
+<body>
+    <h1>Please complete the task in the bot!</h1>
+    <p>You will be redirected shortly...</p>
+</body>
+</html>
 
