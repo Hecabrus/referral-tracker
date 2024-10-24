@@ -31,7 +31,7 @@ app.post('/track', (req, res) => {
   res.redirect('https://t.me/LuckyDrawMasterBot/app?startapp=Y2g9a1FqOXh2SFI3RyZnPXNwJmw9a1FqOXh2SFI3RyZzbz1TaGFyZSZ1PTU0OTA3NzU2NTM%3D&utm_source=telegram&utm_medium=bot&utm_campaign=Referral+');
 });
 
-// Endpoint to verify if the user stayed on the bot for 10 seconds
+// Check if user stayed on the bot for 10 seconds
 app.post('/verify', (req, res) => {
   const { userId } = req.body;
   const currentTime = new Date().getTime();
