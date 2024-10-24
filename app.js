@@ -1,51 +1,68 @@
-const express = require('express');
-const bodyParser = require('body-parser');  
+import express from 'express';
+import bodyParser from 'body-parser';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import cors from 'cors';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 
-// Serve static files (landing page HTML)
-app.use(express.static('public'));
-
-// Parse incoming request bodies
+// Middleware
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static('public'));
 
-// Placeholder for tracking user visit time
-let visitTimestamps = {};
+// Store verifications in memory
+const userVerifications = new Map();
 
-// Landing page route
+// Serve landing page
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/public/index.html');  // Serve the landing page
+    res.sendFile(join(__dirname, 'public', 'index.html'));
 });
 
-// Track when the user clicks "Verify" to redirect to the bot
+// Track user visits
 app.post('/track', (req, res) => {
-  const { userId } = req.body;
-  const currentTime = new Date().getTime();
+    const { userId } = req.body;
+    if (!userId) {
+        return res.status(400).json({ success: false, message: 'userId required' });
+    }
 
-  // Store the timestamp when the user visits the page
-  visitTimestamps[userId] = currentTime;
-  console.log(`User ${userId} visited at ${new Date(currentTime)}`);
+    userVerifications.set(userId, {
+        visitTime: Date.now(),
+        verified: true
+    });
 
-  // Redirect to the bot after user clicks "Verify"
-  res.redirect('https://t.me/LuckyDrawMasterBot/app?startapp=Y2g9a1FqOXh2SFI3RyZnPXNwJmw9a1FqOXh2SFI3RyZzbz1TaGFyZSZ1PTU0OTA3NzU2NTM%3D&utm_source=telegram&utm_medium=bot&utm_campaign=Referral+');
+    res.json({ success: true });
 });
 
-// Check if user stayed on the bot for 10 seconds
+// Verify user status
 app.post('/verify', (req, res) => {
-  const { userId } = req.body;
-  const currentTime = new Date().getTime();
+    const { userId } = req.body;
+    if (!userId) {
+        return res.status(400).json({ success: false });
+    }
 
-  // Check if the user stayed on the bot for at least 10 seconds
-  if (visitTimestamps[userId] && (currentTime - visitTimestamps[userId] >= 10000)) {
-    res.send({ success: true, message: 'User verified, access granted!' });
-  } else {
-    res.send({ success: false, message: 'User did not stay long enough on the bot.' });
-  }
+    const verification = userVerifications.get(userId);
+    if (verification && verification.verified) {
+        return res.json({ success: true });
+    }
+
+    res.json({ success: false });
 });
 
-// Start the server
-const PORT = process.env.PORT || 3000; // Use environment variable for port
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+// Handle all other routes
+app.get('*', (req, res) => {
+    res.sendFile(join(__dirname, 'public', 'index.html'));
 });
+
+// Export for Vercel
+export default app;
+
+// Start server if not in Vercel
+if (process.env.NODE_ENV !== 'production') {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
